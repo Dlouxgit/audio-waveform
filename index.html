@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="file" onchange="handleFileChanged(event)" />
+    <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
+    <script src="./index.js"></script>
+    <script>
+        var draw = SVG().addTo('body').size(300, 130)
+        const handleFileChanged = (event) => {
+            const file = event.target.files[0]
+            const reader = new FileReader();
+            // file 为读取到的文件，可以通过<input type="file" />实现
+            reader.readAsArrayBuffer(file);
+            reader.onload = evt => {
+                // 编码过的音频数据
+                const encodedBuffer = evt.currentTarget.result;
+                // 下面开始处理读取到的音频数据
+                // 创建环境对象
+                const context = new AudioContext();
+                // 解码
+                context.decodeAudioData(encodedBuffer, decodedBuffer => {
+                    // 创建数据缓存节点
+                    const dataSource = context.createBufferSource();
+                    // 加载缓存
+                    dataSource.buffer = decodedBuffer;
+                    // 连接播放器节点destination，中间可以连接其他节点，比如音量调节节点createGain()，
+                    // 频率分析节点（用于傅里叶变换）createAnalyser()等等
+                    dataSource.connect(context.destination);
+                    // 开始播放
+                    dataSource.start();
+
+                    displayBuffer(draw, decodedBuffer, 524)
+                })
+
+
+            }
+        }
+
+    </script>
+</body>
+</html>
